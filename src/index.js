@@ -14,7 +14,7 @@ newTodoBtn.addEventListener("click", () => {
     const newTodoDeadline = document.querySelector("#deadline");
     const newTodoPriority = document.querySelector("#priority");
     const newTodoNotes = document.querySelector("#notes");
-    document.querySelector("#submit").addEventListener("click", () => {
+    newTodoForm.querySelector("#submit").addEventListener("click", () => {
         const newTodo = createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value)
         const todoDiv = document.createElement("div");
 
