@@ -16,7 +16,26 @@ newTodoBtn.addEventListener("click", () => {
     const newTodoNotes = document.querySelector("#notes");
     document.querySelector("#submit").addEventListener("click", () => {
         const newTodo = createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value)
-        console.log(newTodo);
+        const todoDiv = document.createElement("div");
+
+        const todoTitle = document.createElement("p");
+        todoTitle.textContent = newTodo.title;
+        todoDiv.appendChild(todoTitle);
+        const todoDesc = document.createElement("p");
+        todoDesc.textContent = newTodo.description;
+        todoDiv.appendChild(todoDesc);
+        const todoDeadline = document.createElement("p");
+        todoDeadline.textContent = newTodo.dueDate;
+        todoDiv.appendChild(todoDeadline);
+        const todoPriority = document.createElement("p");
+        todoPriority.textContent = newTodo.priority;
+        todoDiv.appendChild(todoPriority);
+        const todoNotes = document.createElement("p");
+        todoNotes.textContent = newTodo.notes;
+        todoDiv.appendChild(todoNotes);
+
+        document.querySelector("#todo-container").appendChild(todoDiv);
+
         newTodoForm.close();
     });
 });
