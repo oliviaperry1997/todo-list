@@ -31,20 +31,18 @@ newProjectBtn.addEventListener("click", () => {
 
     const newProjectName = document.querySelector("#name");
     newProjectForm.querySelector("#project-submit").addEventListener("click", () => {
-        const newProject = createProject(newProjectName.value);
-
-        const projectDiv = document.createElement("div");
-        projectDiv.id = `project-${newProject.name.toLowerCase()}`;
-        if (!newProject.name.trim()) {
+        const name = newProjectName.value.trim();
+        if (!name) {
             newProjectForm.close();
             newProjectForm.remove();
             return;
         }
-        projectDiv.innerHTML = `<h2>${newProject.name}</h2>`
-        document.querySelector("#todo-container").appendChild(projectDiv);
+
+        createProject(name);
 
         newProjectForm.close();
         newProjectForm.remove();
+        updateDisplay();
     })
 })
 
@@ -84,34 +82,24 @@ newTodoBtn.addEventListener("click", () => {
     const newTodoNotes = document.querySelector("#notes");
     const newTodoProject = document.querySelector("#project")
     newTodoForm.querySelector("#todo-submit").addEventListener("click", () => {
-        const newTodo = createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value, newTodoProject.value)
-        const todoDiv = document.createElement("div");
-
-        const todoTitle = document.createElement("p");
-        todoTitle.textContent = newTodo.title;
-        todoDiv.appendChild(todoTitle);
-        const todoDesc = document.createElement("p");
-        todoDesc.textContent = newTodo.description;
-        todoDiv.appendChild(todoDesc);
-        const todoDeadline = document.createElement("p");
-        todoDeadline.textContent = newTodo.dueDate;
-        todoDiv.appendChild(todoDeadline);
-        const todoPriority = document.createElement("p");
-        todoPriority.textContent = newTodo.priority;
-        todoDiv.appendChild(todoPriority);
-        const todoNotes = document.createElement("p");
-        todoNotes.textContent = newTodo.notes;
-        todoDiv.appendChild(todoNotes);
-
         const projectName = newTodoProject.value.trim().toLowerCase();
-        let todoProject = document.querySelector(`#project-${projectName}`);
+        let todoProject = projectList.find(p => p.projectName.toLowerCase() === projectName);
         if (!todoProject) {
             alert("Project not found, placing item in Default.");
             todoProject = document.querySelector("#project-default");
         }
 
-        todoProject.appendChild(todoDiv);
+        createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value, newTodoProject.value)
+
         newTodoForm.close();
         newTodoForm.remove();
+        updateDisplay();
     });
 });
+
+function updateDisplay() {
+    const str = JSON.stringify(projectList, null, 4);
+    document.querySelector("#todo-container").innerHTML = str;
+}
+
+updateDisplay();
