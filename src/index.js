@@ -82,13 +82,33 @@ newTodoBtn.addEventListener("click", () => {
     const newTodoNotes = document.querySelector("#notes");
     const newTodoProject = document.querySelector("#project")
     newTodoForm.querySelector("#todo-submit").addEventListener("click", () => {
-        const projectName = newTodoProject.value.trim().toLowerCase();
-        let todoProject = projectList.find(p => p.projectName.toLowerCase() === projectName);
-        if (!todoProject) {
-            alert("Project not found, creating new project.");
+        let projectName = newTodoProject.value.trim();
+        if (projectName === "") {
+            projectName = "Default";
         }
 
-        createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value, newTodoProject.value)
+        const normalizedProjectName = projectName.toLowerCase();
+        let todoProject = projectList.find(p => p.projectName.toLowerCase() === normalizedProjectName);
+
+        if (!todoProject) {
+            if (projectName === "Default") {
+                createProject("Default");
+                todoProject = projectList.find(p => p.projectName === "Default");
+            } else {
+                alert("Project not found, creating new project.");
+                createProject(projectName);
+                todoProject = projectList.find(p => p.projectName === projectName);
+            }
+        }
+
+        createTodo(
+            newTodoTitle.value,
+            newTodoDesc.value,
+            newTodoDeadline.value,
+            newTodoPriority.checked,
+            newTodoNotes.value,
+            projectName
+        );
 
         newTodoForm.close();
         newTodoForm.remove();
@@ -97,25 +117,70 @@ newTodoBtn.addEventListener("click", () => {
 });
 
 function updateDisplay() {
-    document.querySelector("#todo-container").innerHTML = '';
+    const container = document.querySelector("#todo-container");
+    container.innerHTML = '';
 
-    for (var i=0; i<projectList.length; i++) {
+    for (let i=0; i<projectList.length; i++) {
+        const project = projectList[i];
+
         const projectDiv = document.createElement('div');
-        projectDiv.id = `project-${projectList[i].projectName.toLowerCase().replace(/\s+/g,'-')}`;
-        projectDiv.innerHTML = `<h2>${projectList[i].projectName}</h2>`;
-        for (var j=0; j<projectList[i].todoList.length; j++) {
-            const todoDiv = document.createElement('div');
-            todoDiv.innerHTML = `
-            <h3>${projectList[i].todoList[j].title}</h3>
-            <p>${projectList[i].todoList[j].description}</p>
-            <p>${projectList[i].todoList[j].dueDate}</p>
-            <p>${projectList[i].todoList[j].priority}</p>
-            <p>${projectList[i].todoList[j].notes}</p>
-            `;
-            projectDiv.appendChild(todoDiv);
-        }
-        document.querySelector("#todo-container").appendChild(projectDiv);
+        projectDiv.id = `project-${project.projectName.toLowerCase().replace(/\s+/g, '-')}`;
+        projectDiv.classList.add('project');
+
+        const projectTitle = document.createElement("h2");
+        projectTitle.textContent = project.projectName;
+
+        projectTitle.addEventListener("click", () => showProject(project));
+
+        projectDiv.appendChild(projectTitle);
+        container.appendChild(projectDiv);
     }
 }
 
+function showProject(selectedProject) {
+    const container = document.querySelector("#todo-container");
+
+    // Remove all existing todo items
+    const projectDivs = container.querySelectorAll('.project');
+    projectDivs.forEach(div => {
+        div.querySelectorAll('.todo-item').forEach(item => item.remove());
+    });
+
+    const selectedProjectDiv = document.querySelector(
+        `#project-${selectedProject.projectName.toLowerCase().replace(/\s+/g, '-')}`
+    );
+
+    selectedProject.todoList.forEach(todo => {
+        const todoDiv = document.createElement('div');
+        todoDiv.classList.add('todo-item');
+
+        const summary = document.createElement('div');
+        summary.innerHTML = `
+            <h3>${todo.title}</h3>
+            <p>Due: ${todo.dueDate}</p>
+        `;
+        summary.style.cursor = "pointer";
+
+        const details = document.createElement('div');
+        details.style.display = "none";
+        details.innerHTML = `
+            <p>${todo.description}</p>
+            <p>${todo.priority ? "High Priority" : "Normal Priority"}</p>
+            <p>${todo.notes}</p>
+        `;
+
+        summary.addEventListener("click", () => {
+            details.style.display = details.style.display === "none" ? "block" : "none";
+        });
+
+        todoDiv.appendChild(summary);
+        todoDiv.appendChild(details);
+        selectedProjectDiv.appendChild(todoDiv);
+    });
+}
+
 updateDisplay();
+const defaultProject = projectList.find(p => p.projectName.toLowerCase() === "default");
+if (defaultProject) {
+    showProject(defaultProject);
+}
