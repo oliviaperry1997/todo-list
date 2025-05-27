@@ -85,8 +85,7 @@ newTodoBtn.addEventListener("click", () => {
         const projectName = newTodoProject.value.trim().toLowerCase();
         let todoProject = projectList.find(p => p.projectName.toLowerCase() === projectName);
         if (!todoProject) {
-            alert("Project not found, placing item in Default.");
-            todoProject = document.querySelector("#project-default");
+            alert("Project not found, creating new project.");
         }
 
         createTodo(newTodoTitle.value, newTodoDesc.value, newTodoDeadline.value, newTodoPriority.checked, newTodoNotes.value, newTodoProject.value)
@@ -102,7 +101,7 @@ function updateDisplay() {
 
     for (var i=0; i<projectList.length; i++) {
         const projectDiv = document.createElement('div');
-        projectDiv.id = `project-${projectList[i].projectName.toLowerCase()}`;
+        projectDiv.id = `project-${projectList[i].projectName.toLowerCase().replace(/\s+/g,'-')}`;
         projectDiv.innerHTML = `<h2>${projectList[i].projectName}</h2>`;
         for (var j=0; j<projectList[i].todoList.length; j++) {
             const todoDiv = document.createElement('div');
