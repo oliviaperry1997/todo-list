@@ -140,7 +140,6 @@ function updateDisplay() {
 function showProject(selectedProject) {
     const container = document.querySelector("#todo-container");
 
-    // Remove all existing todo items
     const projectDivs = container.querySelectorAll('.project');
     projectDivs.forEach(div => {
         div.querySelectorAll('.todo-item').forEach(item => item.remove());
@@ -150,7 +149,7 @@ function showProject(selectedProject) {
         `#project-${selectedProject.projectName.toLowerCase().replace(/\s+/g, '-')}`
     );
 
-    selectedProject.todoList.forEach(todo => {
+    selectedProject.todoList.forEach((todo, index) => {
         const todoDiv = document.createElement('div');
         todoDiv.classList.add('todo-item');
 
@@ -169,13 +168,66 @@ function showProject(selectedProject) {
             <p>${todo.notes}</p>
         `;
 
+        const editBtn = document.createElement('button');
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+            openEditForm(selectedProject, index);
+        });
+
         summary.addEventListener("click", () => {
             details.style.display = details.style.display === "none" ? "block" : "none";
         });
 
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => {
+            if (confirm("Are you sure you want to delete this todo?")) {
+                selectedProject.todoList.splice(index, 1);
+                updateDisplay();
+                showProject(selectedProject);
+            }
+        });
+
         todoDiv.appendChild(summary);
         todoDiv.appendChild(details);
+        todoDiv.appendChild(editBtn);
+        todoDiv.appendChild(deleteBtn);
         selectedProjectDiv.appendChild(todoDiv);
+    });
+}
+
+function openEditForm(project, todoIndex) {
+    const todo = project.todoList[todoIndex];
+    const editForm = document.createElement("dialog");
+    editForm.innerHTML = `
+        <form id="edit-form">
+            <label for='edit-title'>Title:</label>
+            <input id='edit-title' name='title' value="${todo.title}">
+            <label for='edit-desc'>Description:</label>
+            <input id='edit-desc' name='desc' value="${todo.description}">
+            <label for='edit-deadline'>Due By:</label>
+            <input id='edit-deadline' type='date' name='deadline' value="${todo.dueDate}">
+            <label for='edit-priority'>High Priority?</label>
+            <input id='edit-priority' type='checkbox' name='priority' ${todo.priority ? "checked" : ""}>
+            <label for='edit-notes'>Notes:</label>
+            <input id='edit-notes' name='notes' value="${todo.notes}">
+            <button type='button' id='edit-submit'>Save</button>
+        </form>
+    `;
+    document.body.appendChild(editForm);
+    editForm.showModal();
+
+    editForm.querySelector("#edit-submit").addEventListener("click", () => {
+        todo.title = editForm.querySelector("#edit-title").value;
+        todo.description = editForm.querySelector("#edit-desc").value;
+        todo.dueDate = editForm.querySelector("#edit-deadline").value;
+        todo.priority = editForm.querySelector("#edit-priority").checked;
+        todo.notes = editForm.querySelector("#edit-notes").value;
+
+        editForm.close();
+        editForm.remove();
+        updateDisplay();
+        showProject(project);
     });
 }
 
