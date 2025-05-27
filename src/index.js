@@ -98,8 +98,25 @@ newTodoBtn.addEventListener("click", () => {
 });
 
 function updateDisplay() {
-    const str = JSON.stringify(projectList, null, 4);
-    document.querySelector("#todo-container").innerHTML = str;
+    document.querySelector("#todo-container").innerHTML = '';
+
+    for (var i=0; i<projectList.length; i++) {
+        const projectDiv = document.createElement('div');
+        projectDiv.id = `project-${projectList[i].projectName.toLowerCase()}`;
+        projectDiv.innerHTML = `<h2>${projectList[i].projectName}</h2>`;
+        for (var j=0; j<projectList[i].todoList.length; j++) {
+            const todoDiv = document.createElement('div');
+            todoDiv.innerHTML = `
+            <h3>${projectList[i].todoList[j].title}</h3>
+            <p>${projectList[i].todoList[j].description}</p>
+            <p>${projectList[i].todoList[j].dueDate}</p>
+            <p>${projectList[i].todoList[j].priority}</p>
+            <p>${projectList[i].todoList[j].notes}</p>
+            `;
+            projectDiv.appendChild(todoDiv);
+        }
+        document.querySelector("#todo-container").appendChild(projectDiv);
+    }
 }
 
 updateDisplay();
