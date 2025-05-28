@@ -1,6 +1,7 @@
 import { createTodo } from "./app";
 import { createProject } from "./app";
 import { projectList } from "./app";
+import { isValid, parseISO, formatDistanceToNow } from "date-fns";
 
 const newTodoBtn = document.createElement("button");
 newTodoBtn.textContent = "New Todo";
@@ -42,7 +43,8 @@ newProjectBtn.addEventListener("click", () => {
 
         newProjectForm.close();
         newProjectForm.remove();
-        updateDisplay();
+        const openProjects = getOpenProjects();
+        updateDisplay(openProjects);
     })
 })
 
@@ -112,11 +114,18 @@ newTodoBtn.addEventListener("click", () => {
 
         newTodoForm.close();
         newTodoForm.remove();
-        updateDisplay();
+        let openProjects = getOpenProjects();
+
+        if (!openProjects.includes(todoProject.projectName)) {
+            openProjects.push(todoProject.projectName);
+        }
+
+        updateDisplay(openProjects);
+
     });
 });
 
-function updateDisplay() {
+function updateDisplay(openProjects = []) {
     const container = document.querySelector("#todo-container");
     container.innerHTML = '';
 
@@ -129,11 +138,16 @@ function updateDisplay() {
 
         const projectTitle = document.createElement("h2");
         projectTitle.textContent = project.projectName;
+        projectTitle.style.cursor = "pointer";
 
         projectTitle.addEventListener("click", () => showProject(project));
 
         projectDiv.appendChild(projectTitle);
         container.appendChild(projectDiv);
+
+        if (openProjects.includes(project.projectName)) {
+            showProject(project);
+        }
     }
 }
 
@@ -149,14 +163,27 @@ function showProject(selectedProject) {
         `#project-${selectedProject.projectName.toLowerCase().replace(/\s+/g, '-')}`
     );
 
+
     selectedProject.todoList.forEach((todo, index) => {
         const todoDiv = document.createElement('div');
         todoDiv.classList.add('todo-item');
 
+        let timeUntilDue = "Invalid date";
+        const parsedDate = parseISO(todo.dueDate);
+
+        if (isValid(parsedDate)) {
+            const now = new Date();
+            if (parsedDate < now) {
+                timeUntilDue = "Overdue!";
+            } else {
+                timeUntilDue = formatDistanceToNow(new Date(todo.dueDate), { addSuffix: true });
+            }
+        } 
+
         const summary = document.createElement('div');
         summary.innerHTML = `
             <h3>${todo.title}</h3>
-            <p>Due: ${todo.dueDate}</p>
+            <p>Due: ${todo.dueDate} (${timeUntilDue})</p>
         `;
         summary.style.cursor = "pointer";
 
@@ -226,12 +253,25 @@ function openEditForm(project, todoIndex) {
 
         editForm.close();
         editForm.remove();
-        updateDisplay();
+        const openProjects = getOpenProjects();
+        updateDisplay(openProjects);
         showProject(project);
     });
 }
 
-updateDisplay();
+function getOpenProjects() {
+    const open = [];
+    document.querySelectorAll(".project").forEach(div => {
+        if (div.querySelector(".todo-item")) {
+            const name = div.querySelector("h2")?.textContent;
+            if (name) open.push(name);
+        }
+    });
+    return open;
+}
+
+const openProjects = getOpenProjects();
+updateDisplay(openProjects);
 const defaultProject = projectList.find(p => p.projectName.toLowerCase() === "default");
 if (defaultProject) {
     showProject(defaultProject);
